@@ -8,6 +8,11 @@
 
         /***************************************************************************************************/
 
+        public function __construct($login = '', $password = ''){
+            $this->setDeslogin($login);
+            $this->setDessenha($password);
+        }
+
         public function __toString():string {
             return json_encode(array(
                 'idusuario' => $this->getIdusuario(),
@@ -53,18 +58,20 @@
 
         /***************************************************************************************************/
 
+        public function setData($data) {
+            $this->setIdusuario($data['idusuario']);
+            $this->setDeslogin($data['deslogin']);
+            $this->setDessenha($data['dessenha']);
+            $this->setDtcadastro(new DateTime($data['dtcadastro']));
+        }
+        
         public function loadById($id) {
             $sql = new Sql();
             $query = 'SELECT * FROM tb_usuarios WHERE idusuario = :ID';
             $results = $sql->select($query, array(':ID' => $id));
 
             if (count($results) > 0) {
-                $row = $results[0];
-
-                $this->setIdusuario($row['idusuario']);
-                $this->setDeslogin($row['deslogin']);
-                $this->setDessenha($row['dessenha']);
-                $this->setDtcadastro(new DateTime($row['dtcadastro']));
+                $this->setData($results[0]);                
             }
         }
 
@@ -93,14 +100,22 @@
             ));
 
             if (count($results) > 0) {
-                $row = $results[0];
-
-                $this->setIdusuario($row['idusuario']);
-                $this->setDeslogin($row['deslogin']);
-                $this->setDessenha($row['dessenha']);
-                $this->setDtcadastro(new DateTime($row['dtcadastro']));
+                $this->setData($results[0]);
             } else {
                 throw new Exception('Login e/ou senha inválidos!');
+            }
+        }
+
+        public function insert() {
+            $sql = new Sql();
+            $query = 'CALL sp_usuarios_insert(:LOGIN, :PASSWORD)';
+            $results = $sql->select($query, array(
+                ':LOGIN' => $this->getDeslogin(),
+                ':PASSWORD' => $this->getDessenha()
+            ));
+
+            if (count($results) > 0) {
+                $this->setData($results[0]);
             }
         }
     }
